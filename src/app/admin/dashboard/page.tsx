@@ -1,113 +1,85 @@
 import Link from "next/link";
-import { Header } from "@/components/Header";
-import { Footer } from "@/components/Footer";
+import { AdminLayout } from "@/components/AdminLayout";
+import { prisma } from "@/lib/db";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { redirect } from "next/navigation";
 
-export default function AdminDashboard() {
+export const dynamic = "force-dynamic";
+
+export default async function AdminDashboard() {
+  const session = await getServerSession(authOptions);
+  
+  if (!session || session.user.role !== "ADMIN") {
+    redirect("/admin/login");
+  }
+
+  const boloes = await prisma.bolao.findMany({
+    orderBy: { createdAt: 'desc' },
+    include: {
+      _count: {
+        select: { inscriptions: true, games: true }
+      }
+    }
+  });
+
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50">
-      <header className="bg-slate-900 text-white shadow-md">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <Link href="/admin/dashboard" className="font-display font-bold text-xl text-white tracking-wider flex items-center gap-2">
-              <span>Bolão Admin</span>
-              <span className="bg-blue-600 text-xs px-2 py-0.5 rounded text-white">v1.0</span>
-            </Link>
-            
-            <div className="flex items-center gap-4">
-              <span className="text-sm text-slate-300">Olá, Admin</span>
-              <button className="text-sm text-slate-400 hover:text-white transition-colors">Sair</button>
-            </div>
-          </div>
-        </div>
-      </header>
-      
-      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
-        <h1 className="font-display font-bold text-3xl text-slate-800 mb-8">Dashboard</h1>
-        
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-            <div className="text-sm font-semibold text-slate-500 uppercase">Usuários Ativos</div>
-            <div className="mt-2 text-3xl font-display font-bold text-blue-600">1,204</div>
-          </div>
-          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-            <div className="text-sm font-semibold text-slate-500 uppercase">Bolões Criados</div>
-            <div className="mt-2 text-3xl font-display font-bold text-brasil-green">86</div>
-          </div>
-          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-            <div className="text-sm font-semibold text-slate-500 uppercase">Total Movimentado</div>
-            <div className="mt-2 text-3xl font-display font-bold text-brasil-yellow-dark">R$ 45k</div>
-          </div>
-          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-            <div className="text-sm font-semibold text-slate-500 uppercase">Jogos Hoje</div>
-            <div className="mt-2 text-3xl font-display font-bold text-slate-800">4</div>
-          </div>
-        </div>
+    <AdminLayout>
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="font-display font-bold text-3xl text-slate-800">Meus Bolões</h1>
+        <Link 
+          href="/admin/boloes/create" 
+          className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg shadow-md transition-colors"
+        >
+          + Novo Bolão
+        </Link>
+      </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Quick Actions */}
-          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-            <h2 className="font-bold text-lg text-slate-800 mb-4 border-b pb-2">Ações Rápidas</h2>
-            <div className="space-y-3">
-              <Link href="/admin/games" className="flex items-center justify-between p-3 bg-slate-50 hover:bg-slate-100 rounded-lg transition-colors group">
-                <span className="font-medium text-slate-700">Gerenciar Jogos</span>
-                <span className="text-blue-500 group-hover:translate-x-1 transition-transform">&rarr;</span>
-              </Link>
-              <Link href="/admin/results" className="flex items-center justify-between p-3 bg-slate-50 hover:bg-slate-100 rounded-lg transition-colors group">
-                <span className="font-medium text-slate-700">Atualizar Resultados Oficiais</span>
-                <span className="text-blue-500 group-hover:translate-x-1 transition-transform">&rarr;</span>
-              </Link>
-              <Link href="/admin/users" className="flex items-center justify-between p-3 bg-slate-50 hover:bg-slate-100 rounded-lg transition-colors group">
-                <span className="font-medium text-slate-700">Gerenciar Usuários</span>
-                <span className="text-blue-500 group-hover:translate-x-1 transition-transform">&rarr;</span>
-              </Link>
-              <button className="w-full flex items-center justify-between p-3 bg-red-50 hover:bg-red-100 text-red-700 rounded-lg transition-colors group text-left">
-                <span className="font-medium">Recalcular Pontuações (Force)</span>
-                <span className="text-red-500">⚠️</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Recent Activity */}
-          <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-            <h2 className="font-bold text-lg text-slate-800 mb-4 border-b pb-2">Jogos Recentes (Resultados Pendentes)</h2>
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-slate-200">
-                <thead>
-                  <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase">Data</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase">Jogo</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase">Status</th>
-                    <th className="px-4 py-3 text-right text-xs font-medium text-slate-500 uppercase">Ação</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-200">
-                  <tr>
-                    <td className="px-4 py-3 text-sm text-slate-600">Hoje, 16:00</td>
-                    <td className="px-4 py-3 text-sm font-medium text-slate-800">Brasil vs Sérvia</td>
-                    <td className="px-4 py-3 text-sm"><span className="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs font-bold">Ao Vivo</span></td>
-                    <td className="px-4 py-3 text-sm text-right">
-                      <button className="text-blue-600 hover:text-blue-800 font-medium">Atualizar</button>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="px-4 py-3 text-sm text-slate-600">Ontem, 13:00</td>
-                    <td className="px-4 py-3 text-sm font-medium text-slate-800">Argentina vs Croácia</td>
-                    <td className="px-4 py-3 text-sm"><span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-bold">Finalizado</span></td>
-                    <td className="px-4 py-3 text-sm text-right">
-                      <button className="text-blue-600 hover:text-blue-800 font-medium">Editar Placar</button>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
+      {boloes.length === 0 ? (
+        <div className="bg-white p-10 rounded-xl shadow-sm text-center border border-slate-200">
+          <div className="text-5xl mb-4">🏆</div>
+          <h2 className="text-xl font-bold text-slate-700 mb-2">Nenhum bolão criado ainda</h2>
+          <p className="text-slate-500 mb-6">Crie seu primeiro bolão para começar a organizar os jogos da galera.</p>
+          <Link href="/admin/boloes/create" className="text-blue-600 font-bold hover:underline">Criar Bolão Agora</Link>
         </div>
-      </main>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {boloes.map((bolao) => (
+            <div key={bolao.id} className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col">
+              <div className="flex justify-between items-start mb-4">
+                <h2 className="font-bold text-xl text-slate-800 line-clamp-1">{bolao.name}</h2>
+                <span className={`text-xs font-bold px-2 py-1 rounded-full ${bolao.status === 'OPEN' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                  {bolao.status === 'OPEN' ? 'ABERTO' : 'FECHADO'}
+                </span>
+              </div>
+              
+              <div className="space-y-2 mb-6 flex-1">
+                <div className="flex justify-between text-sm text-slate-600">
+                  <span>Cota de Entrada:</span>
+                  <span className="font-bold text-slate-800">R$ {bolao.quotaValue.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-sm text-slate-600">
+                  <span>Participantes:</span>
+                  <span className="font-bold text-slate-800">{bolao._count.inscriptions}</span>
+                </div>
+                <div className="flex justify-between text-sm text-slate-600">
+                  <span>Jogos:</span>
+                  <span className="font-bold text-slate-800">{bolao._count.games}</span>
+                </div>
+              </div>
 
-      <footer className="bg-slate-900 py-4 text-center text-xs text-slate-500 mt-auto">
-        &copy; {new Date().getFullYear()} Sistema Admin - Bolão da Galera
-      </footer>
-    </div>
+              <div className="flex gap-2 border-t pt-4">
+                <Link href={`/admin/boloes/${bolao.id}/edit`} className="flex-1 text-center py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded font-medium transition-colors">
+                  Editar e PIX
+                </Link>
+                <Link href={`/admin/games?bolaoId=${bolao.id}`} className="flex-1 text-center py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded font-medium transition-colors">
+                  Ver Jogos
+                </Link>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </AdminLayout>
   );
 }
