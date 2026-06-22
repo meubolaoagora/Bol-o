@@ -23,6 +23,7 @@ export default function EditBolaoForm({ bolao }: { bolao: Bolao }) {
       orgFeePercent: parseFloat(formData.get("orgFeePercent") as string),
       registrationDeadline: formData.get("registrationDeadline") ? new Date(formData.get("registrationDeadline") as string).toISOString() : new Date().toISOString(),
       pixKey: formData.get("pixKey") || "Não informada",
+      pixQrCodePath: formData.get("pixQrCodePath") || null,
     };
 
     try {
@@ -114,6 +115,12 @@ export default function EditBolaoForm({ bolao }: { bolao: Bolao }) {
             <label className="block text-sm font-medium text-slate-700 mb-1">Chave PIX (Copia e Cola) para Pagamentos</label>
             <input name="pixKey" type="text" defaultValue={bolao.pixKey} required className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500" />
             <p className="text-xs text-slate-500 mt-1">Apenas atualizar se a chave PIX mudar.</p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Link/URL do QR Code do PIX (Opcional)</label>
+            <input name="pixQrCodePath" type="url" defaultValue={bolao.pixQrCodePath || ""} className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="https://exemplo.com/meu-qrcode.png" />
+            <p className="text-xs text-slate-500 mt-1">Cole aqui o link direto da imagem do seu QR Code gerado no banco.</p>
           </div>
 
           <div>

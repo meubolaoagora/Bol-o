@@ -8,20 +8,14 @@ import { GameCard, Game } from "@/components/GameCard";
 import { RankingTable, RankingEntry } from "@/components/RankingTable";
 import { PixInfo } from "@/components/PixInfo";
 
-// Mock Data for ranking until ranking API is built
-const mockRanking: RankingEntry[] = [
-  { id: "1", position: 1, name: "João Silva", points: 125, exactMatches: 4 },
-  { id: "2", position: 2, name: "Maria Oliveira", points: 110, exactMatches: 3 },
-  { id: "3", position: 3, name: "Pedro Santos", points: 95, exactMatches: 2 },
-];
-
 export default function BolaoDetailsClient({ 
   bolao, 
   games, 
   prizePool, 
   participantsCount,
   userPredictions,
-  isLoggedIn
+  isLoggedIn,
+  ranking
 }: any) {
   const [activeTab, setActiveTab] = useState<"ranking" | "palpites" | "pagamento">("ranking");
 
@@ -88,8 +82,13 @@ export default function BolaoDetailsClient({
         {/* Tab Content */}
         {activeTab === "ranking" && (
           <div className="animate-fade-in">
-            <RankingTable entries={mockRanking} />
-            <p className="text-center text-sm text-gray-400 mt-4">Ranking real em desenvolvimento.</p>
+            {ranking.length > 0 ? (
+              <RankingTable entries={ranking} />
+            ) : (
+              <p className="text-center text-slate-500 py-10 bg-white rounded-xl shadow-sm border border-slate-200">
+                Ninguém pontuou ainda. Faça seus palpites e aguarde os resultados!
+              </p>
+            )}
           </div>
         )}
 
@@ -127,6 +126,7 @@ export default function BolaoDetailsClient({
             <PixInfo 
               amount={bolao.quotaValue} 
               pixKey={bolao.pixKey}
+              qrCodeUrl={bolao.pixQrCodePath}
             />
           </div>
         )}

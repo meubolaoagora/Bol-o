@@ -5,10 +5,12 @@ import Link from "next/link";
 import { signOut } from "next-auth/react";
 
 export function AdminLayout({ children }: { children: React.ReactNode }) {
+  const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
+
   return (
     <div className="min-h-screen flex bg-slate-100">
-      {/* Sidebar */}
-      <aside className="w-64 bg-slate-900 text-white flex flex-col hidden md:flex fixed h-full z-20">
+      {/* Sidebar Desktop */}
+      <aside className="w-64 bg-slate-900 text-white flex-col hidden md:flex fixed h-full z-20">
         <div className="p-6 border-b border-slate-800">
           <Link href="/admin/dashboard" className="font-display font-bold text-2xl tracking-wider">
             Bolão <span className="text-brasil-yellow">Admin</span>
@@ -42,12 +44,27 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
 
       {/* Main Content */}
       <main className="flex-1 md:ml-64 flex flex-col min-h-screen">
-        <header className="bg-white shadow-sm h-16 flex items-center justify-between px-8 md:hidden">
-           <Link href="/admin/dashboard" className="font-display font-bold text-xl text-slate-900">
-            Bolão <span className="text-brasil-green">Admin</span>
-          </Link>
+        <header className="bg-white shadow-sm h-16 flex items-center justify-between px-4 md:hidden relative z-30">
+          <div className="flex items-center gap-3">
+            <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="text-slate-600 focus:outline-none">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+            </button>
+            <Link href="/admin/dashboard" className="font-display font-bold text-xl text-slate-900">
+              Bolão <span className="text-brasil-green">Admin</span>
+            </Link>
+          </div>
           <button onClick={() => signOut({ callbackUrl: '/admin/login' })} className="text-red-600 font-bold">Sair</button>
         </header>
+
+        {/* Mobile Navigation Dropdown */}
+        {mobileMenuOpen && (
+          <nav className="md:hidden bg-slate-800 text-white absolute top-16 left-0 w-full z-20 shadow-lg border-b border-slate-700">
+            <Link href="/admin/dashboard" onClick={() => setMobileMenuOpen(false)} className="block px-6 py-4 border-b border-slate-700 hover:bg-slate-700">📊 Dashboard</Link>
+            <Link href="/admin/boloes/create" onClick={() => setMobileMenuOpen(false)} className="block px-6 py-4 border-b border-slate-700 hover:bg-slate-700">🏆 Novo Bolão</Link>
+            <Link href="/admin/games" onClick={() => setMobileMenuOpen(false)} className="block px-6 py-4 border-b border-slate-700 hover:bg-slate-700">⚽ Jogos</Link>
+            <Link href="/admin/results" onClick={() => setMobileMenuOpen(false)} className="block px-6 py-4 hover:bg-slate-700">📝 Resultados</Link>
+          </nav>
+        )}
         <div className="p-8 flex-1 overflow-auto">
           {children}
         </div>

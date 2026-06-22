@@ -32,6 +32,17 @@ export default function AuthPage() {
         if (res?.error) {
           setError(res.error);
         } else {
+          try {
+            const pRes = await fetch("/api/perfil");
+            if (pRes.ok) {
+              const pData = await pRes.json();
+              if (pData.role === "ADMIN") {
+                router.push("/admin/dashboard");
+                router.refresh();
+                return;
+              }
+            }
+          } catch (e) {}
           router.push("/boloes");
           router.refresh();
         }

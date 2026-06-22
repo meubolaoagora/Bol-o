@@ -58,6 +58,27 @@ export default async function BolaoDetailsPage({ params }: { params: Promise<{ i
     awayTeam: { id: g.teamB, name: g.teamB, code: g.teamB.substring(0,3).toUpperCase(), flagUrl: `https://flagcdn.com/ar.svg` }  // Placeholder flag
   }));
 
+  // Calculate Ranking
+  const allPredictions = await prisma.prediction.findMany({
+    where: { game: { bolaoId } },
+    include: { user: { select: { id: true, name: true } } }
+  });
+
+  const rankingMap: Record<number, { id: string, name: string, points: number, exactMatches: number }> = {};
+  for (const p of allPredictions) {
+    if (!rankingMap[p.userId]) {
+      rankingMap[p.userId] = { id: p.userId.toString(), name: p.user.name, points: 0, exactMatches: 0 };
+    }
+    rankingMap[p.userId].points += p.pointsEarned;
+    if (p.pointsEarned === bolao.exactScorePoints) {
+      rankingMap[p.userId].exactMatches += 1;
+    }
+  }
+
+  const realRanking = Object.values(rankingMap)
+    .sort((a, b) => b.points - a.points || b.exactMatches - a.exactMatches)
+    .map((r, i) => ({ ...r, position: i + 1 }));
+
   return (
     <BolaoDetailsClient 
       bolao={bolao} 
@@ -66,6 +87,7 @@ export default async function BolaoDetailsPage({ params }: { params: Promise<{ i
       participantsCount={bolao._count.inscriptions}
       userPredictions={userPredictions}
       isLoggedIn={!!session}
+      ranking={realRanking}
     />
   );
 }
