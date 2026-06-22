@@ -1,0 +1,98 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            Int           @id @default(autoincrement())
+  name          String
+  email         String        @unique
+  phone         String?
+  passwordHash  String
+  role          String        @default("PARTICIPANT") // "ADMIN" or "PARTICIPANT"
+  createdAt     DateTime      @default(now())
+  inscriptions  Inscription[]
+  predictions   Prediction[]
+}
+
+model Bolao {
+  id                   Int           @id @default(autoincrement())
+  name                 String
+  quotaValue           Float
+  orgFeePercent        Float
+  registrationDeadline DateTime
+  pixKey               String
+  pixQrCodePath        String?
+  exactScorePoints     Int           @default(10)
+  winnerDiffPoints     Int           @default(7)
+  winnerOnlyPoints     Int           @default(5)
+  wrongPoints          Int           @default(0)
+  status               String        @default("OPEN") // "OPEN", "CLOSED", "FINISHED"
+  createdAt            DateTime      @default(now())
+  games                Game[]
+  inscriptions         Inscription[]
+  prizeRules           PrizeRule[]
+}
+
+model PrizeRule {
+  id         Int     @id @default(autoincrement())
+  bolaoId    Int
+  position   Int
+  percentage Float
+  bolao      Bolao   @relation(fields: [bolaoId], references: [id])
+}
+
+model Game {
+  id          Int          @id @default(autoincrement())
+  bolaoId     Int
+  teamA       String
+  teamB       String
+  matchDate   DateTime
+  phase       String
+  scoreA      Int?
+  scoreB      Int?
+  status      String       @default("SCHEDULED") // "SCHEDULED", "LIVE", "FINISHED"
+  bolao       Bolao        @relation(fields: [bolaoId], references: [id])
+  predictions Prediction[]
+}
+
+model Inscription {
+  id            Int            @id @default(autoincrement())
+  userId        Int
+  bolaoId       Int
+  paymentStatus String         @default("PENDING") // "PENDING", "CONFIRMED"
+  createdAt     DateTime       @default(now())
+  bolao         Bolao          @relation(fields: [bolaoId], references: [id])
+  user          User           @relation(fields: [userId], references: [id])
+  paymentProof  PaymentProof?
+}
+
+model PaymentProof {
+  id            Int         @id @default(autoincrement())
+  inscriptionId Int         @unique
+  imagePath     String
+  uploadedAt    DateTime    @default(now())
+  inscription   Inscription @relation(fields: [inscriptionId], references: [id])
+}
+
+model Prediction {
+  id              Int      @id @default(autoincrement())
+  userId          Int
+  gameId          Int
+  predictedScoreA Int
+  predictedScoreB Int
+  pointsEarned    Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  game            Game     @relation(fields: [gameId], references: [id])
+  user            User     @relation(fields: [userId], references: [id])
+  
+  @@unique([userId, gameId])
+}
