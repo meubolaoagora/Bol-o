@@ -1,10 +1,37 @@
 "use client";
 
 import Link from "next/link";
+import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 
 export default function AdminLogin() {
+  const router = useRouter();
+  const [error, setError] = useState("");
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setError("");
+    const formData = new FormData(e.currentTarget);
+    const email = formData.get("email") as string;
+    const password = formData.get("password") as string;
+    
+    const res = await signIn("credentials", {
+      email,
+      password,
+      redirect: false,
+    });
+
+    if (res?.error) {
+      setError(res.error);
+    } else {
+      router.push("/admin/dashboard");
+      router.refresh();
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-slate-900">
       <header className="bg-slate-950 text-white shadow-md py-4">
@@ -32,7 +59,8 @@ export default function AdminLogin() {
             </p>
           </div>
           
-          <form className="mt-8 space-y-6" action="#" method="POST">
+          <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+            {error && <div className="p-3 bg-red-900/50 text-red-200 border border-red-700 rounded-lg text-sm text-center">{error}</div>}
             <div className="space-y-4">
               <div>
                 <label htmlFor="email-address" className="sr-only">Email Admin</label>

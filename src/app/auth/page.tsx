@@ -2,11 +2,66 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 
 export default function AuthPage() {
+  const router = useRouter();
   const [isLogin, setIsLogin] = useState(true);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+    const formData = new FormData(e.currentTarget);
+    const email = formData.get("email") as string;
+    const password = formData.get("password") as string;
+    
+    try {
+      if (isLogin) {
+        const res = await signIn("credentials", {
+          email,
+          password,
+          redirect: false,
+        });
+
+        if (res?.error) {
+          setError(res.error);
+        } else {
+          router.push("/boloes");
+          router.refresh();
+        }
+      } else {
+        const name = formData.get("name") as string;
+        const res = await fetch("/api/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, email, password })
+        });
+        
+        if (res.ok) {
+          const signRes = await signIn("credentials", { email, password, redirect: false });
+          if (!signRes?.error) {
+            router.push("/boloes");
+            router.refresh();
+          } else {
+            setError(signRes.error);
+          }
+        } else {
+          const data = await res.json();
+          setError(data.error || "Erro ao cadastrar.");
+        }
+      }
+    } catch (err) {
+      setError("Erro inesperado. Tente novamente.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-surface">
@@ -32,7 +87,8 @@ export default function AuthPage() {
             </p>
           </div>
           
-          <form className="mt-8 space-y-6" action="#" method="POST">
+          <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+            {error && <div className="p-3 bg-red-100 text-red-700 border border-red-300 rounded-xl text-sm text-center">{error}</div>}
             <div className="rounded-md shadow-sm space-y-4">
               {!isLogin && (
                 <div>
@@ -100,12 +156,13 @@ export default function AuthPage() {
             <div>
               <button
                 type="submit"
-                className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-bold rounded-xl text-white bg-brasil-green hover:bg-brasil-green-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brasil-green transition-all shadow-lg hover:shadow-xl"
+                disabled={loading}
+                className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-bold rounded-xl text-white bg-brasil-green hover:bg-brasil-green-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brasil-green transition-all shadow-lg hover:shadow-xl disabled:opacity-50"
               >
                 <span className="absolute left-0 inset-y-0 flex items-center pl-3">
                   {isLogin ? "⚽" : "📝"}
                 </span>
-                {isLogin ? "Entrar em Campo" : "Confirmar Escalação"}
+                {loading ? "Aguarde..." : (isLogin ? "Entrar em Campo" : "Confirmar Escalação")}
               </button>
             </div>
           </form>
