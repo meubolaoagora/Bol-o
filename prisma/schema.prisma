@@ -19,10 +19,25 @@ model User {
   pixKey        String?
   photoUrl      String?
   passwordHash  String
-  role          String        @default("PARTICIPANT") // "ADMIN" or "PARTICIPANT"
-  createdAt     DateTime      @default(now())
+  role          String          @default("PARTICIPANT") // "ADMIN" or "PARTICIPANT"
+  currentChallenge String?
+  createdAt     DateTime        @default(now())
   inscriptions  Inscription[]
   predictions   Prediction[]
+  authenticators Authenticator[]
+}
+
+model Authenticator {
+  credentialID         String  @id
+  userId               Int
+  providerAccountId    String
+  credentialPublicKey  String
+  counter              Int
+  credentialDeviceType String
+  credentialBackedUp   Boolean
+  transports           String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Bolao {

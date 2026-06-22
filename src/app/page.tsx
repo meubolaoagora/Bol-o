@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { BolaoCard } from "@/components/BolaoCard";
@@ -35,7 +36,19 @@ export default async function Home() {
         <section className="hero-gradient text-white py-20 px-4 relative overflow-hidden">
           <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10 mix-blend-overlay"></div>
           
-          <div className="max-w-7xl mx-auto text-center relative z-10 animate-fade-in">
+          <div className="max-w-7xl mx-auto text-center relative z-10 animate-fade-in flex flex-col items-center">
+            {/* Animated Logo */}
+            <div className="mb-8 relative group">
+              <div className="absolute inset-0 bg-brasil-yellow rounded-full blur-2xl opacity-40 group-hover:opacity-70 transition-opacity duration-1000 animate-pulse-glow"></div>
+              <Image 
+                src="/logo.jpg" 
+                alt="Logo Meu Bolão" 
+                width={200} 
+                height={200} 
+                className="relative z-10 rounded-full border-4 border-white/20 shadow-2xl animate-[breathe_4s_ease-in-out_infinite]"
+              />
+            </div>
+            
             <h1 className="font-display font-bold text-5xl md:text-7xl mb-6 text-brasil-yellow drop-shadow-lg tracking-tight">
               A COPA DO MUNDO É NOSSA!
             </h1>

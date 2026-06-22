@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState } from "react";
 import { useSession, signOut } from "next-auth/react";
 
@@ -14,8 +15,9 @@ export function Header() {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <div className="flex-shrink-0 flex items-center">
-            <Link href="/" className="font-display font-bold text-2xl text-brasil-yellow tracking-wider">
-              BOLÃO DA GALERA <span className="text-white">⚽</span>
+            <Link href="/" className="flex items-center gap-2 font-display font-bold text-2xl text-brasil-yellow tracking-wider">
+              <Image src="/logo.jpg" alt="Logo" width={40} height={40} className="rounded-full border-2 border-white/20 animate-[breathe_3s_ease-in-out_infinite]" />
+              <span className="hidden sm:inline">BOLÃO DA GALERA</span>
             </Link>
           </div>
 

@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { startAuthentication } from "@simplewebauthn/browser";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 
@@ -12,6 +13,61 @@ export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [biometricLoading, setBiometricLoading] = useState(false);
+
+  const handleBiometricLogin = async () => {
+    setError("");
+    setBiometricLoading(true);
+    try {
+      // 1. Get email
+      const emailInput = document.getElementById("email-address") as HTMLInputElement;
+      const email = emailInput?.value;
+
+      if (!email) {
+        setError("Digite seu e-mail primeiro para usar o Face ID/Digital.");
+        setBiometricLoading(false);
+        return;
+      }
+
+      // 2. Fetch options
+      const res = await fetch(`/api/auth/webauthn/authenticate?email=${encodeURIComponent(email)}`);
+      if (!res.ok) {
+        throw new Error("Erro ao obter opções de biometria. Você já a configurou no Perfil?");
+      }
+      const options = await res.json();
+
+      // 3. Authenticate with browser
+      const authResp = await startAuthentication(options);
+
+      // 4. Verify with NextAuth
+      const signRes = await signIn("credentials", {
+        email,
+        webauthnResponse: JSON.stringify(authResp),
+        redirect: false,
+      });
+
+      if (signRes?.error) {
+        setError(signRes.error);
+      } else {
+        const pRes = await fetch("/api/perfil");
+        if (pRes.ok) {
+          const pData = await pRes.json();
+          if (pData.role === "ADMIN") {
+            router.push("/admin/dashboard");
+            router.refresh();
+            return;
+          }
+        }
+        router.push("/boloes");
+        router.refresh();
+      }
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || "Falha no reconhecimento biométrico.");
+    } finally {
+      setBiometricLoading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -135,12 +191,34 @@ export default function AuthPage() {
                   name="password"
                   type="password"
                   autoComplete={isLogin ? "current-password" : "new-password"}
-                  required
+                  required={!isLogin} // Not strictly required for biometric login
                   className="appearance-none relative block w-full px-4 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-xl focus:outline-none focus:ring-2 focus:ring-brasil-green focus:border-brasil-green sm:text-sm transition-all"
                   placeholder="Senha secreta"
                 />
               </div>
             </div>
+
+            {isLogin && (
+              <div className="flex flex-col gap-3">
+                <button
+                  type="button"
+                  onClick={handleBiometricLogin}
+                  disabled={biometricLoading || loading}
+                  className="w-full flex justify-center py-3 px-4 border-2 border-brasil-blue text-sm font-bold rounded-xl text-brasil-blue bg-white hover:bg-gray-50 focus:outline-none transition-all shadow-sm disabled:opacity-50"
+                >
+                  <span className="mr-2">👤</span>
+                  {biometricLoading ? "Reconhecendo..." : "Entrar com Face ID / Digital"}
+                </button>
+                <div className="relative my-2">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-gray-200" />
+                  </div>
+                  <div className="relative flex justify-center text-sm">
+                    <span className="px-2 bg-white text-gray-500 text-xs uppercase">Ou use sua senha</span>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {isLogin && (
               <div className="flex items-center justify-between">

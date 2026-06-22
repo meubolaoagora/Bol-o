@@ -18,6 +18,65 @@ export default function BolaoDetailsClient({
   ranking
 }: any) {
   const [activeTab, setActiveTab] = useState<"ranking" | "palpites" | "pagamento">("ranking");
+  
+  // Convert array/object of userPredictions into a workable state map by gameId
+  const initialPredictions = Object.keys(userPredictions || {}).reduce((acc: any, key) => {
+    acc[key] = {
+      scoreA: userPredictions[key]?.scoreA ?? null,
+      scoreB: userPredictions[key]?.scoreB ?? null
+    };
+    return acc;
+  }, {});
+
+  const [localPredictions, setLocalPredictions] = useState<{ [gameId: string]: { scoreA: number | null, scoreB: number | null } }>(initialPredictions);
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState("");
+
+  const handleScoreChange = (gameId: string, homeScore: number, awayScore: number) => {
+    setLocalPredictions(prev => ({
+      ...prev,
+      [gameId]: { scoreA: homeScore, scoreB: awayScore }
+    }));
+  };
+
+  const handleSavePredictions = async () => {
+    setSaving(true);
+    setMessage("");
+
+    const predictionsToSave = Object.keys(localPredictions)
+      .filter(gameId => localPredictions[gameId].scoreA !== null && localPredictions[gameId].scoreB !== null)
+      .map(gameId => ({
+        gameId: parseInt(gameId),
+        predictedScoreA: localPredictions[gameId].scoreA,
+        predictedScoreB: localPredictions[gameId].scoreB
+      }));
+
+    if (predictionsToSave.length === 0) {
+      setMessage("Preencha ao menos um palpite completo (os dois placares) para salvar.");
+      setSaving(false);
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/palpites", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(predictionsToSave)
+      });
+
+      if (res.ok) {
+        setMessage("✅ Palpites salvos com sucesso!");
+        setTimeout(() => setMessage(""), 3000);
+      } else {
+        const err = await res.json();
+        setMessage(`❌ Erro: ${err.error || "Falha ao salvar."}`);
+      }
+    } catch (e) {
+      setMessage("❌ Erro de conexão ao salvar palpites.");
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-surface">
@@ -94,10 +153,19 @@ export default function BolaoDetailsClient({
 
         {activeTab === "palpites" && (
           <div className="animate-fade-in space-y-6">
-            <div className="flex justify-between items-center bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center bg-white p-4 rounded-xl border border-gray-200 shadow-sm gap-4">
               <h3 className="font-display font-bold text-xl text-brasil-blue">Jogos do Bolão</h3>
               {isLoggedIn ? (
-                 <button className="btn-brasil-yellow text-sm px-4 py-2">Salvar Palpites</button>
+                 <div className="flex items-center gap-3">
+                   {message && <span className="text-sm font-bold animate-fade-in">{message}</span>}
+                   <button 
+                     onClick={handleSavePredictions}
+                     disabled={saving}
+                     className="btn-brasil-yellow text-sm px-4 py-2 disabled:opacity-50"
+                   >
+                     {saving ? "Salvando..." : "Salvar Meus Palpites"}
+                   </button>
+                 </div>
               ) : (
                  <span className="text-sm text-red-500 font-bold">Faça login para palpitar</span>
               )}
@@ -111,8 +179,9 @@ export default function BolaoDetailsClient({
                   <GameCard 
                     key={game.id} 
                     game={game} 
-                    userHomeScore={userPredictions[parseInt(game.id)]?.scoreA}
-                    userAwayScore={userPredictions[parseInt(game.id)]?.scoreB}
+                    userHomeScore={localPredictions[game.id]?.scoreA ?? undefined}
+                    userAwayScore={localPredictions[game.id]?.scoreB ?? undefined}
+                    onScoreChange={handleScoreChange}
                     readOnly={game.status === "finished" || game.status === "live" || !isLoggedIn}
                   />
                 ))}

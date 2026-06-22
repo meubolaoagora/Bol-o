@@ -4,11 +4,46 @@ import { useState } from "react";
 import { AdminLayout } from "@/components/AdminLayout";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useEffect } from "react";
 
 export default function CreateBolao() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [qrBase64, setQrBase64] = useState<string | null>(null);
+  const [defaultPixKey, setDefaultPixKey] = useState("");
+
+  useEffect(() => {
+    // Fetch admin profile to get default PIX Key
+    const fetchProfile = async () => {
+      try {
+        const res = await fetch("/api/perfil");
+        if (res.ok) {
+          const data = await res.json();
+          if (data.pixKey) setDefaultPixKey(data.pixKey);
+        }
+      } catch (e) {
+        console.error("Failed to fetch admin profile");
+      }
+    };
+    fetchProfile();
+  }, []);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 2 * 1024 * 1024) { // 2MB limit
+      setError("A imagem do QR Code deve ter no máximo 2MB.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      setQrBase64(event.target?.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -22,7 +57,7 @@ export default function CreateBolao() {
       orgFeePercent: parseFloat(formData.get("orgFeePercent") as string),
       registrationDeadline: formData.get("registrationDeadline") ? new Date(formData.get("registrationDeadline") as string).toISOString() : new Date().toISOString(),
       pixKey: formData.get("pixKey") || "Não informada",
-      pixQrCodePath: formData.get("pixQrCodePath") || null,
+      pixQrCodePath: qrBase64,
       exactScorePoints: 10,
       winnerDiffPoints: 7,
       winnerOnlyPoints: 5,
@@ -85,14 +120,24 @@ export default function CreateBolao() {
 
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Chave PIX (Copia e Cola) para Pagamentos</label>
-              <input name="pixKey" type="text" required className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="Sua chave PIX (CPF, Email, Telefone ou Aleatória)" />
+              <input name="pixKey" type="text" defaultValue={defaultPixKey} required className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="Sua chave PIX (CPF, Email, Telefone ou Aleatória)" />
               <p className="text-xs text-slate-500 mt-1">Os participantes verão esta chave para realizar o pagamento.</p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Link/URL do QR Code do PIX (Opcional)</label>
-              <input name="pixQrCodePath" type="url" className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="https://exemplo.com/meu-qrcode.png" />
-              <p className="text-xs text-slate-500 mt-1">Cole aqui o link direto da imagem do seu QR Code gerado no banco.</p>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Imagem do QR Code do PIX (Opcional)</label>
+              <input 
+                type="file" 
+                accept="image/*"
+                onChange={handleFileChange}
+                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 bg-white" 
+              />
+              <p className="text-xs text-slate-500 mt-1">Envie a imagem do seu QR Code gerado pelo banco (Máx: 2MB).</p>
+              {qrBase64 && (
+                <div className="mt-2 w-32 h-32 bg-gray-100 rounded-lg p-2 border border-gray-200">
+                  <img src={qrBase64} alt="QR Code Preview" className="w-full h-full object-contain" />
+                </div>
+              )}
             </div>
 
             <div>

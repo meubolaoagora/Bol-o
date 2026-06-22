@@ -12,46 +12,63 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { gameId, predictedScoreA, predictedScoreB } = body;
+    let predictionsArray = [];
 
-    if (!gameId || predictedScoreA === undefined || predictedScoreB === undefined) {
-      return NextResponse.json({ error: "Dados incompletos para o palpite." }, { status: 400 });
+    // Check if it's an array of predictions or a single one
+    if (Array.isArray(body)) {
+      predictionsArray = body;
+    } else {
+      predictionsArray = [body];
     }
 
-    const game = await prisma.game.findUnique({
-      where: { id: Number(gameId) },
-    });
-
-    if (!game) {
-      return NextResponse.json({ error: "Jogo não encontrado." }, { status: 404 });
+    if (predictionsArray.length === 0) {
+      return NextResponse.json({ error: "Nenhum palpite enviado." }, { status: 400 });
     }
 
-    // Check if the game has already started
-    if (new Date() >= new Date(game.matchDate)) {
-      return NextResponse.json({ error: "Não é possível enviar palpites para um jogo que já começou ou já foi finalizado." }, { status: 400 });
-    }
+    const results = [];
 
-    // Upsert the prediction (create if it doesn't exist, update if it does)
-    const prediction = await prisma.prediction.upsert({
-      where: {
-        userId_gameId: {
+    for (const p of predictionsArray) {
+      const { gameId, predictedScoreA, predictedScoreB } = p;
+
+      if (!gameId || predictedScoreA === undefined || predictedScoreB === undefined) {
+        continue; // Skip invalid
+      }
+
+      const game = await prisma.game.findUnique({
+        where: { id: Number(gameId) },
+      });
+
+      if (!game) continue;
+
+      // Check if the game has already started
+      if (new Date() >= new Date(game.matchDate)) {
+        continue; // Skip games that already started
+      }
+
+      // Upsert the prediction
+      const prediction = await prisma.prediction.upsert({
+        where: {
+          userId_gameId: {
+            userId: Number(session.user.id),
+            gameId: Number(gameId),
+          },
+        },
+        update: {
+          predictedScoreA: Number(predictedScoreA),
+          predictedScoreB: Number(predictedScoreB),
+        },
+        create: {
           userId: Number(session.user.id),
           gameId: Number(gameId),
+          predictedScoreA: Number(predictedScoreA),
+          predictedScoreB: Number(predictedScoreB),
         },
-      },
-      update: {
-        predictedScoreA: Number(predictedScoreA),
-        predictedScoreB: Number(predictedScoreB),
-      },
-      create: {
-        userId: Number(session.user.id),
-        gameId: Number(gameId),
-        predictedScoreA: Number(predictedScoreA),
-        predictedScoreB: Number(predictedScoreB),
-      },
-    });
+      });
+      
+      results.push(prediction);
+    }
 
-    return NextResponse.json(prediction);
+    return NextResponse.json({ success: true, saved: results.length });
   } catch (error) {
     console.error("Erro ao salvar palpite:", error);
     return NextResponse.json({ error: "Erro interno ao salvar palpite." }, { status: 500 });

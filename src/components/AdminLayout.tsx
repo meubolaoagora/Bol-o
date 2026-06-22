@@ -30,6 +30,12 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
           <Link href="/admin/results" className="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors">
             <span className="text-xl">📝</span> Resultados
           </Link>
+          <Link href="/admin/users" className="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors">
+            <span className="text-xl">👥</span> Usuários
+          </Link>
+          <Link href="/perfil" className="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors">
+            <span className="text-xl">👤</span> Meu Perfil
+          </Link>
         </nav>
         
         <div className="p-4 border-t border-slate-800">
@@ -62,7 +68,9 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
             <Link href="/admin/dashboard" onClick={() => setMobileMenuOpen(false)} className="block px-6 py-4 border-b border-slate-700 hover:bg-slate-700">📊 Dashboard</Link>
             <Link href="/admin/boloes/create" onClick={() => setMobileMenuOpen(false)} className="block px-6 py-4 border-b border-slate-700 hover:bg-slate-700">🏆 Novo Bolão</Link>
             <Link href="/admin/games" onClick={() => setMobileMenuOpen(false)} className="block px-6 py-4 border-b border-slate-700 hover:bg-slate-700">⚽ Jogos</Link>
-            <Link href="/admin/results" onClick={() => setMobileMenuOpen(false)} className="block px-6 py-4 hover:bg-slate-700">📝 Resultados</Link>
+            <Link href="/admin/results" onClick={() => setMobileMenuOpen(false)} className="block px-6 py-4 border-b border-slate-700 hover:bg-slate-700">📝 Resultados</Link>
+            <Link href="/admin/users" onClick={() => setMobileMenuOpen(false)} className="block px-6 py-4 border-b border-slate-700 hover:bg-slate-700">👥 Usuários</Link>
+            <Link href="/perfil" onClick={() => setMobileMenuOpen(false)} className="block px-6 py-4 hover:bg-slate-700">👤 Meu Perfil</Link>
           </nav>
         )}
         <div className="p-8 flex-1 overflow-auto">
