@@ -16,6 +16,8 @@ model User {
   name          String
   email         String        @unique
   phone         String?
+  pixKey        String?
+  photoUrl      String?
   passwordHash  String
   role          String        @default("PARTICIPANT") // "ADMIN" or "PARTICIPANT"
   createdAt     DateTime      @default(now())

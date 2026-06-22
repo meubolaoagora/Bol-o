@@ -2,9 +2,11 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { useSession, signOut } from "next-auth/react";
 
 export function Header() {
   const [isOpen, setIsOpen] = useState(false);
+  const { data: session } = useSession();
 
   return (
     <header className="bg-brasil-blue text-white shadow-md sticky top-0 z-50">
@@ -25,9 +27,24 @@ export function Header() {
             <Link href="/boloes" className="text-white hover:text-brasil-yellow transition-colors font-medium">
               Bolões
             </Link>
-            <Link href="/auth" className="btn-brasil-yellow px-4 py-2 text-sm">
-              Entrar / Cadastrar
-            </Link>
+            {session ? (
+              <div className="flex items-center space-x-4">
+                <Link href="/perfil" className="flex items-center space-x-2 text-white hover:text-brasil-yellow transition-colors">
+                  <span className="text-xl">👤</span>
+                  <span className="font-bold">{session.user?.name?.split(" ")[0]}</span>
+                </Link>
+                <button 
+                  onClick={() => signOut()}
+                  className="text-sm text-red-300 hover:text-red-400 font-bold"
+                >
+                  Sair
+                </button>
+              </div>
+            ) : (
+              <Link href="/auth" className="btn-brasil-yellow px-4 py-2 text-sm">
+                Entrar / Cadastrar
+              </Link>
+            )}
           </nav>
 
           {/* Mobile Menu Button */}
@@ -58,9 +75,23 @@ export function Header() {
             <Link href="/boloes" className="block px-3 py-2 text-base font-medium text-white hover:text-brasil-yellow">
               Bolões
             </Link>
-            <Link href="/auth" className="block px-3 py-2 text-base font-bold text-brasil-yellow">
-              Entrar / Cadastrar
-            </Link>
+            {session ? (
+              <>
+                <Link href="/perfil" className="block px-3 py-2 text-base font-bold text-brasil-yellow">
+                  Meu Perfil
+                </Link>
+                <button 
+                  onClick={() => signOut()}
+                  className="block px-3 py-2 text-base font-bold text-red-400 w-full text-left"
+                >
+                  Sair
+                </button>
+              </>
+            ) : (
+              <Link href="/auth" className="block px-3 py-2 text-base font-bold text-brasil-yellow">
+                Entrar / Cadastrar
+              </Link>
+            )}
           </div>
         </div>
       )}

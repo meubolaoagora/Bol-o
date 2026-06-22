@@ -1,40 +1,31 @@
 import Link from "next/link";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-import { BolaoCard, Bolao } from "@/components/BolaoCard";
+import { BolaoCard } from "@/components/BolaoCard";
+import { prisma } from "@/lib/db";
 
-// Mock data para a landing page
-const mockBoloes: Bolao[] = [
-  {
-    id: "1",
-    name: "Bolão da Firma",
-    owner: "João Silva",
-    participantsCount: 42,
-    entryFee: 50,
-    prizePool: 2100,
-    status: "open",
-  },
-  {
-    id: "2",
-    name: "Família Buscapé",
-    owner: "Maria Oliveira",
-    participantsCount: 15,
-    entryFee: 20,
-    prizePool: 300,
-    status: "open",
-  },
-  {
-    id: "3",
-    name: "Amigos do Futebol",
-    owner: "Carlos Santos",
-    participantsCount: 120,
-    entryFee: 100,
-    prizePool: 12000,
-    status: "confirmed",
-  },
-];
+export const dynamic = "force-dynamic";
 
-export default function Home() {
+export default async function Home() {
+  const boloes = await prisma.bolao.findMany({
+    where: { status: "OPEN" },
+    orderBy: { createdAt: "desc" },
+    take: 3,
+    include: {
+      _count: { select: { inscriptions: true } }
+    }
+  });
+
+  const formattedBoloes = boloes.map(b => ({
+    id: b.id.toString(),
+    name: b.name,
+    owner: "Admin",
+    participantsCount: b._count.inscriptions,
+    entryFee: b.quotaValue,
+    prizePool: b.quotaValue * b._count.inscriptions * ((100 - b.orgFeePercent) / 100),
+    status: b.status.toLowerCase() as "open" | "live" | "finished" | "confirmed",
+  }));
+
   return (
     <>
       <Header />
@@ -49,7 +40,7 @@ export default function Home() {
               A COPA DO MUNDO É NOSSA!
             </h1>
             <p className="text-xl md:text-2xl mb-10 max-w-3xl mx-auto font-medium text-gray-100">
-              Crie seu bolão, chame os amigos e mostre quem é o verdadeiro especialista em futebol.
+              Participe do nosso bolão oficial, chame os amigos e mostre quem é o verdadeiro especialista em futebol.
             </p>
             
             <div className="flex flex-col sm:flex-row justify-center gap-4">
@@ -57,7 +48,7 @@ export default function Home() {
                 Começar Agora
               </Link>
               <Link href="/boloes" className="bg-white/20 hover:bg-white/30 text-white backdrop-blur-md border border-white/40 font-bold py-4 px-8 rounded-xl transition-all duration-300">
-                Ver Bolões Abertos
+                Ver Bolões Oficiais
               </Link>
             </div>
           </div>
@@ -81,7 +72,7 @@ export default function Home() {
                 </div>
                 <h3 className="font-bold text-xl mb-4 text-gray-800">Escolha um Bolão</h3>
                 <p className="text-gray-600">
-                  Participe de bolões públicos ou crie um grupo privado só para seus amigos e colegas de trabalho.
+                  Participe dos bolões oficiais disponíveis na plataforma de acordo com a sua preferência.
                 </p>
               </div>
 
@@ -91,7 +82,7 @@ export default function Home() {
                 </div>
                 <h3 className="font-bold text-xl mb-4 text-gray-800">Faça seus Palpites</h3>
                 <p className="text-gray-600">
-                  Preencha os placares de todos os jogos da fase de grupos e ganhe pontos por acertos exatos ou parciais.
+                  Preencha os placares de todos os jogos e ganhe pontos por acertos exatos ou parciais.
                 </p>
               </div>
 
@@ -123,11 +114,15 @@ export default function Home() {
               </Link>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {mockBoloes.map((bolao) => (
-                <BolaoCard key={bolao.id} bolao={bolao} />
-              ))}
-            </div>
+            {formattedBoloes.length === 0 ? (
+               <div className="text-center py-10 text-gray-500">Nenhum bolão aberto no momento.</div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {formattedBoloes.map((bolao) => (
+                  <BolaoCard key={bolao.id} bolao={bolao} />
+                ))}
+              </div>
+            )}
 
             <div className="mt-8 text-center sm:hidden">
               <Link href="/boloes" className="btn-brasil inline-block w-full text-center">
@@ -144,7 +139,7 @@ export default function Home() {
               PRONTO PARA ENTRAR EM CAMPO?
             </h2>
             <p className="text-xl text-blue-200 mb-10">
-              Não deixe para a última hora. Crie sua conta gratuita e comece a palpitar nos jogos do Brasil e do mundo.
+              Não deixe para a última hora. Crie sua conta gratuita e comece a palpitar nos jogos oficiais do campeonato.
             </p>
             <Link href="/auth" className="btn-brasil-yellow text-xl py-4 px-10 shadow-2xl animate-pulse-glow">
               Criar Conta Grátis
