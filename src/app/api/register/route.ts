@@ -5,11 +5,11 @@ import bcrypt from "bcryptjs";
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { name, email, password, phone } = body;
+    const { name, email, password, cpf, pixKey } = body;
 
-    if (!name || !email || !password) {
+    if (!name || !email) {
       return NextResponse.json(
-        { error: "Nome, e-mail e senha são obrigatórios." },
+        { error: "Nome e e-mail são obrigatórios." },
         { status: 400 }
       );
     }
@@ -25,13 +25,16 @@ export async function POST(request: Request) {
       );
     }
 
-    const passwordHash = await bcrypt.hash(password, 10);
+    // Generate a random password if not provided
+    const pass = password || Math.random().toString(36).slice(-8);
+    const passwordHash = await bcrypt.hash(pass, 10);
 
     const user = await prisma.user.create({
       data: {
         name,
         email,
-        phone,
+        cpf,
+        pixKey,
         passwordHash,
         role: "PARTICIPANT",
       },

@@ -21,6 +21,8 @@ export const metadata: Metadata = {
   description:
     "Crie bolões, palpite nos jogos da Copa e dispute prêmios com seus amigos. Plataforma peer-to-peer segura e divertida.",
   keywords: ["bolão", "copa do mundo", "futebol", "palpites", "amigos"],
+  manifest: "/manifest.json",
+  themeColor: "#ffdf00",
 };
 
 export default function RootLayout({
@@ -34,6 +36,21 @@ export default function RootLayout({
         <Providers>
           {children}
         </Providers>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              if ('serviceWorker' in navigator) {
+                window.addEventListener('load', function() {
+                  navigator.serviceWorker.register('/sw.js').then(function(registration) {
+                    console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                  }, function(err) {
+                    console.log('ServiceWorker registration failed: ', err);
+                  });
+                });
+              }
+            `,
+          }}
+        />
       </body>
     </html>
   );
