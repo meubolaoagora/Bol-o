@@ -17,10 +17,11 @@ export default function BolaoDetailsClient({
   participantsCount,
   userPredictions,
   isLoggedIn,
-  ranking
+  ranking,
+  adminPhone
 }: any) {
   // Determine initial state based on login
-  const [activeTab, setActiveTab] = useState<"registro" | "pagamento" | "palpites" | "ranking">(isLoggedIn ? "ranking" : "registro");
+  const [activeTab, setActiveTab] = useState<"registro" | "pagamento" | "palpites" | "ranking">(isLoggedIn ? "palpites" : "registro");
   const [formData, setFormData] = useState({ name: "", email: "", cpf: "", pixKey: "" });
   const [regLoading, setRegLoading] = useState(false);
   const [regError, setRegError] = useState("");
@@ -73,8 +74,10 @@ export default function BolaoDetailsClient({
       if (res.ok) {
         setMessage("✅ Palpites salvos! Redirecionando para o WhatsApp...");
         setTimeout(() => {
+          // Remove special characters from phone
+          const cleanPhone = (adminPhone || "5511000000000").replace(/\D/g, '');
           const text = encodeURIComponent(`Olá, acabei de fazer meus palpites no bolão *${bolao.name}* e aqui está meu comprovante de pagamento!`);
-          window.open(`https://wa.me/5511000000000?text=${text}`, "_blank");
+          window.open(`https://wa.me/${cleanPhone}?text=${text}`, "_blank");
           setMessage("");
         }, 1500);
       } else {
@@ -169,12 +172,6 @@ export default function BolaoDetailsClient({
         {isLoggedIn && (
           <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-2 mb-8 flex flex-wrap gap-2">
             <button 
-              onClick={() => setActiveTab("ranking")}
-              className={`flex-1 min-w-[120px] py-3 px-4 text-center font-bold rounded-lg transition-all ${activeTab === "ranking" ? "bg-brasil-green text-white shadow-md" : "text-gray-600 hover:bg-gray-50"}`}
-            >
-              🏆 Ranking
-            </button>
-            <button 
               onClick={() => setActiveTab("palpites")}
               className={`flex-1 min-w-[120px] py-3 px-4 text-center font-bold rounded-lg transition-all ${activeTab === "palpites" ? "bg-brasil-blue text-white shadow-md" : "text-gray-600 hover:bg-gray-50"}`}
             >
@@ -185,6 +182,12 @@ export default function BolaoDetailsClient({
               className={`flex-1 min-w-[120px] py-3 px-4 text-center font-bold rounded-lg transition-all ${activeTab === "pagamento" ? "bg-brasil-yellow text-brasil-blue shadow-md" : "text-gray-600 hover:bg-gray-50"}`}
             >
               💲 Pagamento
+            </button>
+            <button 
+              onClick={() => setActiveTab("ranking")}
+              className={`flex-1 min-w-[120px] py-3 px-4 text-center font-bold rounded-lg transition-all ${activeTab === "ranking" ? "bg-brasil-green text-white shadow-md" : "text-gray-600 hover:bg-gray-50"}`}
+            >
+              🏆 Ranking
             </button>
           </div>
         )}

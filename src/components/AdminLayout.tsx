@@ -33,6 +33,9 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
           <Link href="/admin/users" className="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors">
             <span className="text-xl">👥</span> Usuários
           </Link>
+          <Link href="/admin/whatsapp" className="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors">
+            <span className="text-xl">📱</span> WhatsApp Suporte
+          </Link>
           <Link href="/perfil" className="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors">
             <span className="text-xl">👤</span> Meu Perfil
           </Link>
@@ -70,6 +73,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
             <Link href="/admin/games" onClick={() => setMobileMenuOpen(false)} className="block px-6 py-4 border-b border-slate-700 hover:bg-slate-700">⚽ Jogos</Link>
             <Link href="/admin/results" onClick={() => setMobileMenuOpen(false)} className="block px-6 py-4 border-b border-slate-700 hover:bg-slate-700">📝 Resultados</Link>
             <Link href="/admin/users" onClick={() => setMobileMenuOpen(false)} className="block px-6 py-4 border-b border-slate-700 hover:bg-slate-700">👥 Usuários</Link>
+            <Link href="/admin/whatsapp" onClick={() => setMobileMenuOpen(false)} className="block px-6 py-4 border-b border-slate-700 hover:bg-slate-700">📱 WhatsApp Suporte</Link>
             <Link href="/perfil" onClick={() => setMobileMenuOpen(false)} className="block px-6 py-4 hover:bg-slate-700">👤 Meu Perfil</Link>
           </nav>
         )}

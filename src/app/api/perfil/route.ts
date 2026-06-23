@@ -33,12 +33,18 @@ export async function PUT(request: Request) {
     }
 
     const body = await request.json();
-    const { name, pixKey, photoUrl } = body;
+    const { name, pixKey, photoUrl, phone } = body;
+
+    const dataToUpdate: any = {};
+    if (name !== undefined) dataToUpdate.name = name;
+    if (pixKey !== undefined) dataToUpdate.pixKey = pixKey;
+    if (photoUrl !== undefined) dataToUpdate.photoUrl = photoUrl;
+    if (phone !== undefined) dataToUpdate.phone = phone;
 
     const updatedUser = await prisma.user.update({
       where: { id: parseInt(session.user.id) },
-      data: { name, pixKey, photoUrl },
-      select: { name: true, email: true, pixKey: true, photoUrl: true }
+      data: dataToUpdate,
+      select: { name: true, email: true, pixKey: true, photoUrl: true, phone: true }
     });
 
     return NextResponse.json(updatedUser);

@@ -26,6 +26,13 @@ export default async function BolaoDetailsPage({ params }: { params: Promise<{ i
     orderBy: { matchDate: 'asc' }
   });
 
+  // Get Admin phone for WhatsApp
+  const adminUser = await prisma.user.findFirst({
+    where: { role: 'ADMIN' },
+    select: { phone: true }
+  });
+  const adminPhone = adminUser?.phone || "5511000000000";
+
   // Get current user predictions if logged in
   let userPredictions: Record<number, { scoreA: number, scoreB: number }> = {};
   
@@ -88,6 +95,7 @@ export default async function BolaoDetailsPage({ params }: { params: Promise<{ i
       userPredictions={userPredictions}
       isLoggedIn={!!session}
       ranking={realRanking}
+      adminPhone={adminPhone}
     />
   );
 }
