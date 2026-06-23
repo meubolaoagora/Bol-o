@@ -6,15 +6,38 @@ import Link from "next/link";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 
-export default function HomePageClient({ boloes }: { boloes: any[] }) {
+export default function HomePageClient({ boloes, winnerInfo, adminPhone }: { boloes: any[], winnerInfo?: any, adminPhone?: string }) {
   const [loading, setLoading] = useState(true);
+  const [showWinner, setShowWinner] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => {
       setLoading(false);
+      
+      // Check if user won and hasn't seen the popup yet
+      if (winnerInfo) {
+        const hasSeen = localStorage.getItem(`won_bolao_${winnerInfo.bolaoId}`);
+        if (!hasSeen) {
+          setShowWinner(true);
+        }
+      }
     }, 2500); // 2.5s splash screen
     return () => clearTimeout(timer);
-  }, []);
+  }, [winnerInfo]);
+
+  const handleClaimPrize = () => {
+    if (!winnerInfo) return;
+    
+    // Mark as seen
+    localStorage.setItem(`won_bolao_${winnerInfo.bolaoId}`, "true");
+    setShowWinner(false);
+
+    // Redirect to WhatsApp
+    const cleanPhone = (adminPhone || "5511000000000").replace(/\D/g, '');
+    const formattedPrize = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(winnerInfo.prizeAmount);
+    const text = encodeURIComponent(`Olá! Eu ganhei o bolão *${winnerInfo.bolaoName}*! Meu prêmio é de ${formattedPrize}. Como faço para receber?`);
+    window.open(`https://wa.me/${cleanPhone}?text=${text}`, "_blank");
+  };
 
   if (loading) {
     return (
@@ -45,7 +68,51 @@ export default function HomePageClient({ boloes }: { boloes: any[] }) {
   return (
     <div className="min-h-screen flex flex-col bg-surface">
       <Header />
-      <main className="flex-1 max-w-md mx-auto w-full px-4 py-8">
+      <main className="flex-1 max-w-md mx-auto w-full px-4 py-8 relative">
+        
+        {/* WINNER POPUP */}
+        {showWinner && winnerInfo && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+            <div className="bg-white rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl relative animate-bounce-in border-4 border-brasil-yellow">
+              <div className="absolute -top-12 left-1/2 -translate-x-1/2 text-6xl drop-shadow-lg">
+                🏆
+              </div>
+              <h2 className="font-display font-bold text-4xl text-brasil-green mt-6 mb-2">
+                VOCÊ GANHOU!
+              </h2>
+              <p className="text-slate-600 mb-4 font-medium">
+                Parabéns! Você ficou em 1º lugar no bolão:
+                <br/>
+                <strong className="text-lg text-brasil-blue">{winnerInfo.bolaoName}</strong>
+              </p>
+              
+              <div className="bg-brasil-yellow/20 rounded-2xl p-4 mb-6">
+                <p className="text-sm text-brasil-blue-dark font-bold uppercase mb-1">Seu Prêmio</p>
+                <p className="font-display font-bold text-4xl text-brasil-green">
+                  {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(winnerInfo.prizeAmount)}
+                </p>
+              </div>
+
+              <button 
+                onClick={handleClaimPrize}
+                className="w-full py-4 bg-brasil-green hover:bg-brasil-green-dark text-white font-bold rounded-xl shadow-[0_8px_0_0_#007A2F] active:translate-y-2 active:shadow-[0_0px_0_0_#007A2F] transition-all text-xl"
+              >
+                Resgatar no WhatsApp 📲
+              </button>
+              
+              <button 
+                onClick={() => {
+                  localStorage.setItem(`won_bolao_${winnerInfo.bolaoId}`, "true");
+                  setShowWinner(false);
+                }}
+                className="mt-4 text-slate-400 hover:text-slate-600 font-medium text-sm"
+              >
+                Fechar
+              </button>
+            </div>
+          </div>
+        )}
+
         <h2 className="font-display font-bold text-2xl text-center text-brasil-blue mb-8">
           BOLÕES DISPONÍVEIS
         </h2>
