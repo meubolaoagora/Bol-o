@@ -65,7 +65,7 @@ model PrizeRule {
   bolaoId    Int
   position   Int
   percentage Float
-  bolao      Bolao   @relation(fields: [bolaoId], references: [id])
+  bolao      Bolao   @relation(fields: [bolaoId], references: [id], onDelete: Cascade)
 }
 
 model Game {
@@ -78,7 +78,7 @@ model Game {
   scoreA      Int?
   scoreB      Int?
   status      String       @default("SCHEDULED") // "SCHEDULED", "LIVE", "FINISHED"
-  bolao       Bolao        @relation(fields: [bolaoId], references: [id])
+  bolao       Bolao        @relation(fields: [bolaoId], references: [id], onDelete: Cascade)
   predictions Prediction[]
 }
 
@@ -88,8 +88,8 @@ model Inscription {
   bolaoId       Int
   paymentStatus String         @default("PENDING") // "PENDING", "CONFIRMED"
   createdAt     DateTime       @default(now())
-  bolao         Bolao          @relation(fields: [bolaoId], references: [id])
-  user          User           @relation(fields: [userId], references: [id])
+  bolao         Bolao          @relation(fields: [bolaoId], references: [id], onDelete: Cascade)
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   paymentProof  PaymentProof?
 }
 
@@ -98,7 +98,7 @@ model PaymentProof {
   inscriptionId Int         @unique
   imagePath     String
   uploadedAt    DateTime    @default(now())
-  inscription   Inscription @relation(fields: [inscriptionId], references: [id])
+  inscription   Inscription @relation(fields: [inscriptionId], references: [id], onDelete: Cascade)
 }
 
 model Prediction {
@@ -110,8 +110,8 @@ model Prediction {
   pointsEarned    Int      @default(0)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
-  game            Game     @relation(fields: [gameId], references: [id])
-  user            User     @relation(fields: [userId], references: [id])
+  game            Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   
   @@unique([userId, gameId])
 }
