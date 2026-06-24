@@ -73,7 +73,7 @@ export default async function AdminGamesPage({ searchParams }: { searchParams: P
                             <span>{game.teamB}</span>
                           </div>
                           <div className="text-sm text-slate-500 mt-1">
-                            {new Date(game.matchDate).toLocaleString('pt-BR')}
+                            {new Date(game.matchDate).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })}
                           </div>
                         </div>
                         <div className="mt-4 md:mt-0 flex gap-2 items-center">
