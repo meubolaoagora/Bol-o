@@ -285,6 +285,7 @@ export default function BolaoDetailsClient({
               amount={bolao.quotaValue} 
               pixKey={bolao.pixKey}
               qrCodeUrl={bolao.pixQrCodePath}
+              adminPhone={adminPhone}
             />
             <div className="mt-6 text-center">
               <button 

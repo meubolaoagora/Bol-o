@@ -6,10 +6,12 @@ interface PixInfoProps {
   pixKey: string;
   amount: number;
   qrCodeUrl?: string;
+  adminPhone?: string;
 }
 
-export function PixInfo({ pixKey, amount, qrCodeUrl }: PixInfoProps) {
+export function PixInfo({ pixKey, amount, qrCodeUrl, adminPhone }: PixInfoProps) {
   const [copied, setCopied] = useState(false);
+  const cleanPhone = (adminPhone || "5511000000000").replace(/\D/g, '');
 
   const handleCopy = () => {
     navigator.clipboard.writeText(pixKey);
@@ -68,7 +70,7 @@ export function PixInfo({ pixKey, amount, qrCodeUrl }: PixInfoProps) {
         <div className="w-full mt-6 pt-6 border-t border-gray-100">
           <p className="text-sm text-gray-600 mb-3 text-center">Já fez o pagamento?</p>
           <a 
-            href={`https://wa.me/5511000000000?text=${encodeURIComponent("Olá, acabei de realizar o pagamento do bolão e gostaria de enviar meu comprovante.")}`}
+            href={`https://wa.me/${cleanPhone}?text=${encodeURIComponent("Olá, acabei de realizar o pagamento do bolão e gostaria de enviar meu comprovante.")}`}
             target="_blank"
             rel="noopener noreferrer"
             className="w-full flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#128C7E] text-white font-bold py-3 px-4 rounded-lg shadow-md transition-colors"
