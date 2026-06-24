@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import BolaoDetailsClient from "./BolaoDetailsClient";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { getFlagUrl } from "@/lib/flags";
 
 export default async function BolaoDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -61,8 +62,8 @@ export default async function BolaoDetailsPage({ params }: { params: Promise<{ i
     status: g.status.toLowerCase() as "scheduled" | "live" | "finished",
     homeScore: g.scoreA ?? undefined,
     awayScore: g.scoreB ?? undefined,
-    homeTeam: { id: g.teamA, name: g.teamA, code: g.teamA.substring(0,3).toUpperCase(), flagUrl: `https://flagcdn.com/br.svg` }, // Placeholder flag
-    awayTeam: { id: g.teamB, name: g.teamB, code: g.teamB.substring(0,3).toUpperCase(), flagUrl: `https://flagcdn.com/ar.svg` }  // Placeholder flag
+    homeTeam: { id: g.teamA, name: g.teamA, code: g.teamA.substring(0,3).toUpperCase(), flagUrl: getFlagUrl(g.teamA) },
+    awayTeam: { id: g.teamB, name: g.teamB, code: g.teamB.substring(0,3).toUpperCase(), flagUrl: getFlagUrl(g.teamB) }
   }));
 
   // Calculate Ranking
