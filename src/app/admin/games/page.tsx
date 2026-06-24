@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { AdminLayout } from "@/components/AdminLayout";
 import Link from "next/link";
 import CreateGameForm from "./CreateGameForm";
+import DeleteGameButton from "./DeleteGameButton";
 
 export const dynamic = "force-dynamic";
 
@@ -75,10 +76,11 @@ export default async function AdminGamesPage({ searchParams }: { searchParams: P
                             {new Date(game.matchDate).toLocaleString('pt-BR')}
                           </div>
                         </div>
-                        <div className="mt-4 md:mt-0 flex gap-2">
+                        <div className="mt-4 md:mt-0 flex gap-2 items-center">
                           <span className={`px-3 py-1 rounded-full text-xs font-bold ${game.status === 'FINISHED' ? 'bg-slate-200 text-slate-700' : 'bg-green-100 text-green-800'}`}>
                             {game.status}
                           </span>
+                          <DeleteGameButton gameId={game.id} />
                         </div>
                       </div>
                     ))}
