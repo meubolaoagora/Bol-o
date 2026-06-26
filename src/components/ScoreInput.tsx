@@ -10,6 +10,8 @@ export function ScoreInput({ value, onChange, disabled = false }: ScoreInputProp
   return (
     <input
       type="number"
+      inputMode="numeric"
+      pattern="[0-9]*"
       min="0"
       max="99"
       value={value === undefined ? "" : value}
@@ -19,6 +21,7 @@ export function ScoreInput({ value, onChange, disabled = false }: ScoreInputProp
           onChange(isNaN(val) ? 0 : val);
         }
       }}
+      onFocus={(e) => e.target.select()}
       disabled={disabled}
       className={`score-input ${disabled ? "opacity-75 cursor-not-allowed" : ""}`}
       placeholder="-"

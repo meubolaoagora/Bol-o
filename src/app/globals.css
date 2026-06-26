@@ -75,27 +75,38 @@ body {
   font-family: var(--font-sans);
 }
 
-/* Scoreboard-style number inputs */
+/* Scoreboard-style number inputs — mobile first */
 .score-input {
   font-family: var(--font-display);
-  font-size: 2.5rem;
+  font-size: 1.5rem;
   font-weight: 700;
   text-align: center;
-  width: 4rem;
-  height: 4rem;
-  border: 3px solid var(--color-brasil-blue);
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 2px solid var(--color-brasil-blue);
   border-radius: 0.5rem;
   background: linear-gradient(180deg, #001D5A 0%, #002776 50%, #001D5A 100%);
   color: #FFDF00;
   caret-color: #FFDF00;
   -moz-appearance: textfield;
   transition: all 0.2s ease;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (min-width: 640px) {
+  .score-input {
+    font-size: 2.5rem;
+    width: 4rem;
+    height: 4rem;
+    border-width: 3px;
+  }
 }
 
 .score-input:focus {
   outline: none;
   border-color: var(--color-brasil-yellow);
-  box-shadow: 0 0 15px rgba(255, 223, 0, 0.5);
+  box-shadow: 0 0 12px rgba(255, 223, 0, 0.5);
 }
 
 .score-input::-webkit-outer-spin-button,
@@ -118,6 +129,30 @@ body {
   border-radius: 0.5rem;
   background: linear-gradient(180deg, #001D5A 0%, #002776 50%, #001D5A 100%);
   color: #FFDF00;
+}
+
+/* Mobile-sized score display */
+.score-display-mobile {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+  text-align: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+  background: linear-gradient(180deg, #001D5A 0%, #002776 50%, #001D5A 100%);
+  color: #FFDF00;
+}
+
+@media (min-width: 640px) {
+  .score-display-mobile {
+    font-size: 2.5rem;
+    width: 4rem;
+    height: 4rem;
+  }
 }
 
 /* Medal styles */
