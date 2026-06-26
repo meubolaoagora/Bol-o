@@ -72,13 +72,11 @@ export default function BolaoDetailsClient({
       });
 
       if (res.ok) {
-        setMessage("✅ Palpites salvos! Redirecionando para o WhatsApp...");
+        setMessage("✅ Palpites salvos! Indo para o pagamento...");
         setTimeout(() => {
-          // Remove special characters from phone
-          const cleanPhone = (adminPhone || "5511000000000").replace(/\D/g, '');
-          const text = encodeURIComponent(`Olá, acabei de fazer meus palpites no bolão *${bolao.name}* e aqui está meu comprovante de pagamento!`);
-          window.open(`https://wa.me/${cleanPhone}?text=${text}`, "_blank");
+          setActiveTab("pagamento");
           setMessage("");
+          window.scrollTo({ top: 0, behavior: "smooth" });
         }, 1500);
       } else {
         const err = await res.json();
